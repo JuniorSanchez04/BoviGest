@@ -11,10 +11,6 @@ MUTED      = "#6b7a8d"
 
 
 class DashboardView:
-    """
-    Ventana principal. Sidebar fijo a la izquierda + área de contenido
-    a la derecha que se reemplaza al navegar entre módulos.
-    """
 
     def __init__(self, root: tk.Tk) -> None:
         self.root   = root
@@ -74,15 +70,11 @@ class DashboardView:
         btn.bind("<Leave>", lambda _e, b=btn: b.config(bg=BG_SIDEBAR))
 
     def _opciones_menu(self) -> list[tuple]:
-        """
-        Cada tupla: (etiqueta, icono, permiso_requerido, comando).
-        Para agregar un módulo nuevo, solo se agrega una línea acá.
-        """
         return [
             ("Inicio",           "🏠", "inventario.consultar", self._mostrar_bienvenida),
             ("Inventario",       "🐮", "inventario.consultar", self._ir_a_inventario),
-            ("Sanidad",          "💉", "sanidad.consultar",    self._placeholder),
-            ("Producción / GMD", "⚖️", "produccion.consultar", self._placeholder),
+            ("Sanidad",          "💉", "sanidad.consultar",    self._ir_a_sanidad),
+            ("Producción / GMD", "⚖️", "produccion.consultar", self._ir_a_produccion),
             ("Usuarios",         "👥", "acceso.consultar",     self._placeholder),
             ("Catálogos",        "📋", "catalogos.consultar",  self._placeholder),
         ]
@@ -101,21 +93,17 @@ class DashboardView:
 
     def _mostrar_bienvenida(self) -> None:
         self._limpiar_area()
-
         tk.Label(self.area,
                  text=f"Bienvenido, {self.sesion['nombre']} 👋",
                  font=("Arial", 20, "bold"),
                  bg=BG_CONTENT, fg=TEXT_DARK).pack(pady=(60, 8))
-
         tk.Label(self.area,
                  text=f"Rol: {self.sesion['rol']}  ·  "
                       f"Permisos activos: {len(self.sesion['permisos'])}",
-                 font=("Arial", 11),
-                 bg=BG_CONTENT, fg=MUTED).pack()
+                 font=("Arial", 11), bg=BG_CONTENT, fg=MUTED).pack()
 
         cards = tk.Frame(self.area, bg=BG_CONTENT)
         cards.pack(pady=40)
-
         for icono, nombre, permiso in [
             ("🐮", "Inventario",       "inventario.consultar"),
             ("💉", "Sanidad",          "sanidad.consultar"),
@@ -135,6 +123,16 @@ class DashboardView:
         from views.inventario.inventario_view import InventarioView
         InventarioView(self.area)
 
+    def _ir_a_sanidad(self) -> None:
+        self._limpiar_area()
+        from views.sanidad.sanidad_view import SanidadView
+        SanidadView(self.area)
+
+
+    def _ir_a_produccion(self) -> None:
+        self._limpiar_area()
+        from views.produccion.produccion_view import ProduccionView
+        ProduccionView(self.area)
     def _placeholder(self) -> None:
         self._limpiar_area()
         tk.Label(self.area, text="🚧  Módulo en construcción",

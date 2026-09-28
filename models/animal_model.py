@@ -293,3 +293,55 @@ def registrar_traslado(
     finally:
         cursor.close()
         conn.autocommit = True
+
+
+def buscar_por_caravana(caravana: str) -> dict | None:
+    """
+    Busca un animal activo por su número de caravana exacto.
+    Usado por los formularios de sanidad para identificar el animal.
+    """
+    conn   = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT
+            a.id_animal,
+            a.caravana,
+            c.nombre                AS categoria,
+            s.nombre                AS sexo,
+            COALESCE(l.nombre, '—') AS lote,
+            a.id_lote,
+            a.activo
+        FROM  animales   a
+        JOIN  categorias c ON c.id_categoria = a.id_categoria
+        JOIN  sexos      s ON s.id_sexo      = a.id_sexo
+        LEFT JOIN lotes  l ON l.id_lote      = a.id_lote
+        WHERE a.caravana = %s AND a.activo = TRUE
+    """, (caravana.strip().upper(),))
+    resultado = cursor.fetchone()
+    cursor.close()
+    return resultado
+
+
+def buscar_activo_por_caravana(caravana: str) -> dict | None:
+    """
+    Busca un animal activo por su número de caravana.
+    Usado en los formularios de sanidad para identificar al animal.
+    """
+    conn   = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT
+            a.id_animal,
+            a.caravana,
+            c.nombre                AS categoria,
+            s.nombre                AS sexo,
+            COALESCE(l.nombre, 'Sin lote') AS lote
+        FROM  animales   a
+        JOIN  categorias c ON c.id_categoria = a.id_categoria
+        JOIN  sexos      s ON s.id_sexo      = a.id_sexo
+        LEFT JOIN lotes  l ON l.id_lote      = a.id_lote
+        WHERE a.caravana = %s AND a.activo = TRUE
+    """, (caravana.upper().strip(),))
+    resultado = cursor.fetchone()
+    cursor.close()
+    return resultado
