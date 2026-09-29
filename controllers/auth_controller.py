@@ -8,9 +8,10 @@ def login(username: str, password: str) -> tuple[bool, str | None]:
     Valida credenciales y carga la sesión si son correctas.
 
     Retorna:
-        (True,  None)           — login exitoso
-        (False, mensaje_error)  — login fallido
+        (True, None)             — login exitoso
+        (False, mensaje_error)   — login fallido
     """
+
     # ── Validación de campos vacíos ───────────────────────────
     if not username.strip():
         return False, "Ingresá tu nombre de usuario."
@@ -20,21 +21,29 @@ def login(username: str, password: str) -> tuple[bool, str | None]:
 
     # ── Consulta a la base de datos ───────────────────────────
     password_hash = hashear_password(password)
-    usuario = buscar_usuario_por_credenciales(username.strip(), password_hash)
+    usuario = buscar_usuario_por_credenciales(
+        username.strip(),
+        password_hash
+    )
 
+    # ── Usuario o contraseña incorrectos ──────────────────────
     if usuario is None:
         return False, "Usuario o contraseña incorrectos."
 
+    # ── Verificar si el usuario está activo ───────────────────
+    if not usuario["activo"]:
+        return False, "El usuario está inactivo. Contacte al administrador."
+
     # ── Cargar permisos y abrir sesión ────────────────────────
-    permisos = cargar_permisos(usuario['id_usuario'])
+    permisos = cargar_permisos(usuario["id_usuario"])
 
     iniciar_sesion({
-        'id_usuario': usuario['id_usuario'],
-        'username':   usuario['username'],
-        'nombre':     usuario['nombre'],
-        'apellido':   usuario['apellido'],
-        'rol':        usuario['rol'],
-        'permisos':   permisos,
+        "id_usuario": usuario["id_usuario"],
+        "username": usuario["username"],
+        "nombre": usuario["nombre"],
+        "apellido": usuario["apellido"],
+        "rol": usuario["rol"],
+        "permisos": permisos,
     })
 
     return True, None
